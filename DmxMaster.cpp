@@ -56,7 +56,6 @@ void dmxBegin()
   // Set up port pointers for interrupt routine
   dmxPort = portOutputRegister(digitalPinToPort(dmxPin));
   dmxBit = digitalPinToBitMask(dmxPin);
-  dmxPin = 3;
   // Set DMX pin to output
   pinMode(dmxPin,OUTPUT);
 
