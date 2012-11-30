@@ -34,6 +34,9 @@ void dmxMaxChannel(int);
 #if defined(__AVR_ATmega168__) || defined(__AVR_ATmega168P__) || defined(__AVR_ATmega328P__) || defined(__AVR_ATmega1280__)
 #define TIMER2_INTERRUPT_ENABLE() TIMSK2 |= _BV(TOIE2)
 #define TIMER2_INTERRUPT_DISABLE() TIMSK2 &= ~_BV(TOIE2)
+#elif defined(__AVR_ATmega32U4__)
+#define TIMER2_INTERRUPT_ENABLE() TIMSK3 |= _BV(TOIE3)
+#define TIMER2_INTERRUPT_DISABLE() TIMSK3 &= ~_BV(TOIE3)
 #elif defined(__AVR_ATmega8__)
 #define TIMER2_INTERRUPT_ENABLE() TIMSK |= _BV(TOIE2)
 #define TIMER2_INTERRUPT_DISABLE() TIMSK &= ~_BV(TOIE2)
@@ -52,6 +55,10 @@ void dmxMaxChannel(int);
 void dmxBegin()
 {
   dmxStarted = 1;
+#ifdef __AVR_ATmega32U4__
+  TCCR3A = _BV(WGM30);
+  TCCR3B = _BV(CS31) | _BV(CS30);
+#endif
 
   // Set up port pointers for interrupt routine
   dmxPort = portOutputRegister(digitalPinToPort(dmxPin));
@@ -137,7 +144,12 @@ void dmxSendByte(volatile uint8_t value)
 * own routine, so the TIMER2 interrupt is disabled for the duration of
 * the service routine.
 */
-ISR(TIMER2_OVF_vect,ISR_NOBLOCK) {
+#ifdef __AVR_ATmega32U4__ 
+ISR(TIMER3_OVF_vect,ISR_NOBLOCK) 
+#else 
+ISR(TIMER2_OVF_vect,ISR_NOBLOCK) 
+#endif
+{
 
   // Prevent this interrupt running recursively
   TIMER2_INTERRUPT_DISABLE();
